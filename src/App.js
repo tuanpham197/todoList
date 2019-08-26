@@ -1,134 +1,106 @@
-import React from 'react';
+import React,{Component} from 'react';
 import './App.css';
-
-function App() {
-    return (
-        <div className="container">
-            <div className="text-center">
-                <h1>Quản Lý Công Việc</h1>
-                <hr />
-            </div>
-            <div className="row">
-                <div className="col-xs-4 col-sm-4 col-md-4 col-lg-4">
-                <div className="panel panel-warning">
-                    <div className="panel-heading">
-                    <h3 className="panel-title">Thêm Công Việc</h3>
-                    </div>
-                    <div className="panel-body">
-                    <form>
-                        <div className="form-group">
-                        <label>Tên :</label>
-                        <input type="text" className="form-control" />
-                        </div>
-                        <label>Trạng Thái :</label>
-                        <select className="form-control" required="required">
-                        <option value={1}>Kích Hoạt</option>
-                        <option value={0}>Ẩn</option>
-                        </select>
-                        <br />
-                        <div className="text-center">
-                        <button type="submit" className="btn btn-warning">Thêm</button>&nbsp;
-                        <button type="submit" className="btn btn-danger">Hủy Bỏ</button>
-                        </div>
-                    </form>
-                    </div>
+import TaskForm from './components/TaskForm';
+import Control from './components/Control';
+import TaskList from './components/TaskList';
+var randomstring = require("randomstring");
+class App extends Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            tasks : [],
+            isDisplayForm : true
+        }
+    }
+    UNSAFE_componentWillMount(){
+        if(localStorage && localStorage.getItem('tasks')){
+            var tasks = JSON.parse(localStorage.getItem('tasks'));
+            this.setState({
+                tasks
+            })
+        }   
+    }
+    randomStringId(){
+        return randomstring.generate(4)+"-"+randomstring.generate(5);
+    }
+    onLoadData=()=>{        
+        var tasks = [
+            {
+                id : this.randomStringId(),
+                name : 'Niên luận',
+                status : true
+            },
+            {
+                id : this.randomStringId(),
+                name : 'Học ReactJS',
+                status : false
+            },
+            {
+                id : this.randomStringId(),
+                name : 'Niên luận',
+                status : true
+            }
+        ]
+        this.setState({
+            tasks
+        });
+        localStorage.setItem('tasks',JSON.stringify(tasks));  
+    }
+    onSetDisplay = (params)=>{
+        this.setState({
+            isDisplayForm : params
+        });
+    }
+    addTaskToState = (name,status)=>{
+        var task = {
+            id : this.randomStringId(),
+            name : name,
+            status : status
+        }
+        var arr = this.state.tasks;
+        arr.push(task);
+        this.setState({
+            tasks : arr
+        }) 
+        localStorage.setItem('tasks',JSON.stringify(arr));     
+    }
+    render(){
+        var {isDisplayForm} = this.state;
+        return (
+            <div className="container">
+                <div className="text-center">
+                    <h1>Quản Lý Công Việc</h1>
+                    <hr />
                 </div>
-                </div>
-                <div className="col-xs-8 col-sm-8 col-md-8 col-lg-8">
-                <button type="button" className="btn btn-primary">
-                    <span className="fa fa-plus mr-5" />Thêm Công Việc
-                </button>
-                <div className="row mt-15">
-                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                    <div className="input-group">
-                        <input type="text" className="form-control" placeholder="Nhập từ khóa..." />
-                        <span className="input-group-btn">
-                        <button className="btn btn-primary" type="button">
-                            <span className="fa fa-search mr-5" />Tìm
+                <div className="row mt-5">
+                    <div className={isDisplayForm===true?'col-xs-4 col-sm-4 col-md-4 col-lg-4':''}>
+                        {isDisplayForm === true ? <TaskForm addTaskToState={this.addTaskToState} onSetDisplay={this.onSetDisplay}/> : ''}
+                    </div>
+                    <div className={isDisplayForm===false?'col-xs-12 col-sm-12 col-md-12 col-lg-12':'col-xs-8 col-sm-8 col-md-8 col-lg-8'}>
+                        <button type="button" className="btn btn-primary" onClick={()=>this.onSetDisplay(true)}>
+                        <span className="fa fa-add"></span>Thêm Công Việc
                         </button>
-                        </span>
-                    </div>
-                    </div>
-                    <div className="col-xs-6 col-sm-6 col-md-6 col-lg-6">
-                    <div className="dropdown">
-                        <button className="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Sắp Xếp <span className="fa fa-caret-square-o-down ml-5" />
+                        <button 
+                            type="button" 
+                            className="btn btn-warning"
+                            onClick={()=>this.onLoadData()}
+                        >
+                            Load Data
                         </button>
-                        <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                        <li>
-                            <a role="button">
-                            <span className="fa fa-sort-alpha-asc pr-5">
-                                Tên A-Z
-                            </span>
-                            </a>
-                        </li>
-                        <li>
-                            <a role="button">
-                            <span className="fa fa-sort-alpha-desc pr-5">
-                                Tên Z-A
-                            </span>
-                            </a>
-                        </li>
-                        <li role="separator" className="divider" />
-                        <li><a role="button">Trạng Thái Kích Hoạt</a></li>
-                        <li><a role="button">Trạng Thái Ẩn</a></li>
-                        </ul>
-                    </div>
+                        {/* Search - sort */}
+                        <Control></Control>
+                    
+                        {/* List */}
+                        <div className="row mt-5">
+                            <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <TaskList tasks={this.state.tasks}></TaskList>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="row mt-15">
-                    <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                    <table className="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th className="text-center">STT</th>
-                            <th className="text-center">Tên</th>
-                            <th className="text-center">Trạng Thái</th>
-                            <th className="text-center">Hành Động</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td />
-                            <td>
-                            <input type="text" className="form-control" />
-                            </td>
-                            <td>
-                            <select className="form-control">
-                                <option value={-1}>Tất Cả</option>
-                                <option value={0}>Ẩn</option>
-                                <option value={1}>Kích Hoạt</option>
-                            </select>
-                            </td>
-                            <td />
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>Học lập trình</td>
-                            <td className="text-center">
-                            <span className="label label-success">
-                                Kích Hoạt
-                            </span>
-                            </td>
-                            <td className="text-center">
-                            <button type="button" className="btn btn-warning">
-                                <span className="fa fa-pencil mr-5" />Sửa
-                            </button>
-                            &nbsp;
-                            <button type="button" className="btn btn-danger">
-                                <span className="fa fa-trash mr-5" />Xóa
-                            </button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-                </div>
-            </div>
-        </div>
-
-    );
+            </div>    
+        );
+    }
 }
 
 export default App;

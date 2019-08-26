@@ -22,7 +22,18 @@
 .App-link {
   color: #61dafb;
 }
-
+.text-right{
+  float: right;
+}
+.ml-5{
+  margin-left: 5px;
+}
+.mr-5{
+  margin-right: 5px;
+}
+.mt-5{
+  margin-top: 8px;
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
