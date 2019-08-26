@@ -4,14 +4,25 @@ class TaskForm extends Component {
     constructor(props){
         super(props);
         this.state = {
+            id: '',
             name : '',
             status : false
+        }
+    }
+    UNSAFE_componentWillMount(){
+        if(this.props.taskEditing){
+            this.setState({
+                id : this.props.taskEditing.id,
+                name : this.props.taskEditing.name,
+                status : this.props.taskEditing.status,
+            });
         }
     }
     onChange = (event)=>{
         var target = event.target;
         var name = target.name;
-        var value = target.value;
+        var value = target.value === 'true' ? true : target.value;
+      
         this.setState({
             [name] : value
         });
@@ -24,15 +35,16 @@ class TaskForm extends Component {
     }
     onSubmit = (event)=>{
         event.preventDefault();
-        this.props.addTaskToState(this.state.name,this.state.status==='true' ? true :false);  
+        this.props.addTaskToState(this.state);  
         this.setDefault();
         this.props.onSetDisplay(false);   
     }
     render(){
+        var {id} = this.state;
         return (
             <div className="panel panel-warning mt-5">
                 <div className="panel-heading">
-                <h3 className="panel-title" onClick={()=>this.props.onSetDisplay(false)}>Thêm Công Việc<span className="fa fa-times-circle text-right"></span></h3>
+                <h3 className="panel-title" onClick={()=>this.props.onSetDisplay(false)}>{id !== '' ? 'Sua Công Việc' :'Thêm Công Việc'}<span className="fa fa-times-circle text-right"></span></h3>
                 </div>
                 <div className="panel-body">
                 <form onSubmit={this.onSubmit}>

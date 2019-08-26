@@ -9,7 +9,8 @@ class App extends Component{
         super(props);
         this.state = {
             tasks : [],
-            isDisplayForm : true
+            isDisplayForm : false,
+            taskEditing : null
         }
     }
     UNSAFE_componentWillMount(){
@@ -51,18 +52,58 @@ class App extends Component{
             isDisplayForm : params
         });
     }
-    addTaskToState = (name,status)=>{
-        var task = {
-            id : this.randomStringId(),
-            name : name,
-            status : status
-        }
+    addTaskToState = (data)=>{
         var arr = this.state.tasks;
-        arr.push(task);
+        if(data.id===''){
+            var task = {
+                id : this.randomStringId(),
+                name : data.name,
+                status : data.status
+            }
+            arr.push(task);
+        }
+        else{
+            var index = arr.findIndex(x=>x.id === data.id);
+            arr[index].name = data.name;
+            arr[index].status = data.status;
+        }
         this.setState({
             tasks : arr
         }) 
         localStorage.setItem('tasks',JSON.stringify(arr));     
+    }
+    onUpdateStatus = (id)=>{
+        var task = this.state.tasks;
+        task.forEach(element=>{
+            if(element.id === id){
+                element.status = !element.status;
+            }        
+        });
+        this.setState({
+            tasks : task
+        });
+        localStorage.setItem('tasks',JSON.stringify(task));     
+    }
+    deleteTaskItem = (id)=>{
+        var task = this.state.tasks;
+        var index = task.findIndex(x=>x.id === id);
+        task.splice(index,1);
+        this.setState({
+            tasks: task
+        });
+        localStorage.setItem('tasks',JSON.stringify(task));    
+        
+        this.onSetDisplay(false);  
+    }
+    onUpdate = (id)=>{
+        var task = this.state.tasks;
+        var index = task.findIndex(x=>x.id === id);
+        var taskEditing = task[index];
+        this.setState({
+            taskEditing : taskEditing
+        });
+        console.log(taskEditing);
+        this.onSetDisplay(true); 
     }
     render(){
         var {isDisplayForm} = this.state;
@@ -74,7 +115,11 @@ class App extends Component{
                 </div>
                 <div className="row mt-5">
                     <div className={isDisplayForm===true?'col-xs-4 col-sm-4 col-md-4 col-lg-4':''}>
-                        {isDisplayForm === true ? <TaskForm addTaskToState={this.addTaskToState} onSetDisplay={this.onSetDisplay}/> : ''}
+                        {isDisplayForm === true ? <TaskForm 
+                                                        addTaskToState={this.addTaskToState} 
+                                                        onSetDisplay={this.onSetDisplay}
+                                                        taskEditing = {this.state.taskEditing}
+                                                    /> : ''}
                     </div>
                     <div className={isDisplayForm===false?'col-xs-12 col-sm-12 col-md-12 col-lg-12':'col-xs-8 col-sm-8 col-md-8 col-lg-8'}>
                         <button type="button" className="btn btn-primary" onClick={()=>this.onSetDisplay(true)}>
@@ -93,7 +138,12 @@ class App extends Component{
                         {/* List */}
                         <div className="row mt-5">
                             <div className="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <TaskList tasks={this.state.tasks}></TaskList>
+                                <TaskList 
+                                    tasks={this.state.tasks}
+                                    onUpdateStatus = {this.onUpdateStatus}
+                                    deleteTaskItem = {this.deleteTaskItem}
+                                    onUpdate = {this.onUpdate}
+                                ></TaskList>
                             </div>
                         </div>
                     </div>

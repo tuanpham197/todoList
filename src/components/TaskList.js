@@ -12,6 +12,9 @@ export default class TaskList extends Component {
                         id={element.id}
                         name = {element.name}
                         status = {element.status}
+                        onUpdateStatus = {this.props.onUpdateStatus}
+                        deleteTaskItem = {this.props.deleteTaskItem}
+                        onUpdate = {this.props.onUpdate}
                     ></Item>
         })
         return (
